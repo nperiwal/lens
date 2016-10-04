@@ -116,6 +116,16 @@ public class CandidateTablePruneCause {
         };
       }
     },
+    // incomplete data in the fact
+    INCOMPLETE_PARTITION("Incomplete Data for the cube table: %s") {
+      Object[] getFormatPlaceholders(Set<CandidateTablePruneCause> causes) {
+        Set<Map<String, Map<String, Float>>> incompletePartitions = Sets.newHashSet();
+        for (CandidateTablePruneCause cause : causes) {
+          incompletePartitions.add(cause.getIncompletePartitions());
+        }
+        return new String[]{incompletePartitions.toString()};
+      }
+    },
     NO_FACT_UPDATE_PERIODS_FOR_GIVEN_RANGE("No fact update periods for given range"),
     NO_COLUMN_PART_OF_A_JOIN_PATH("No column part of a join path. Join columns: [%s]") {
       Object[] getFormatPlaceholders(Set<CandidateTablePruneCause> causes) {
@@ -231,6 +241,8 @@ public class CandidateTablePruneCause {
 
   // populated only incase of missing partitions cause
   private Set<String> missingPartitions;
+  // populated only incase of incomplete partitions cause
+  private Map<String, Map<String, Float>> incompletePartitions;
   // populated only incase of missing update periods cause
   private List<String> missingUpdatePeriods;
   // populated in case of missing columns
@@ -297,6 +309,12 @@ public class CandidateTablePruneCause {
     CandidateTablePruneCause cause =
       new CandidateTablePruneCause(MISSING_PARTITIONS);
     cause.setMissingPartitions(nonExistingParts);
+    return cause;
+  }
+
+  public static CandidateTablePruneCause incompletePartitions(Map<String, Map<String, Float>> incompleteParts) {
+    CandidateTablePruneCause cause = new CandidateTablePruneCause(INCOMPLETE_PARTITION);
+    cause.setIncompletePartitions(incompleteParts);
     return cause;
   }
 

@@ -515,7 +515,10 @@ public class CubeTestSetup {
 
   private void createCube(CubeMetastoreClient client) throws HiveException, ParseException, LensException {
     cubeMeasures = new HashSet<CubeMeasure>();
-    cubeMeasures.add(new ColumnMeasure(new FieldSchema("msr1", "int", "first measure")));
+    Map<String, String> tags = new HashMap<>();
+    tags.put(MetastoreConstants.MEASURE_DATACOMPLETENESS_TAG, "tag1");
+    cubeMeasures.add(new ColumnMeasure(new FieldSchema("msr1", "int", "first measure"), null, null, null, null, null,
+            null, null, null, null, tags));
     cubeMeasures.add(new ColumnMeasure(new FieldSchema("msr2", "float", "second measure"), "Measure2", null, "SUM",
       "RS"));
     cubeMeasures.add(new ColumnMeasure(new FieldSchema("msr21", "float", "second measure"), "Measure22", null, "SUM",
@@ -1939,6 +1942,7 @@ public class CubeTestSetup {
     Map<String, String> properties = new HashMap<String, String>();
     properties.putAll(factValidityProperties);
     properties.put(MetastoreConstants.FACT_AGGREGATED_PROPERTY, "false");
+    properties.put(MetastoreConstants.FACT_DATA_COMPLETENESS_TAG, "f1");
 
     client.createCubeFactTable(TEST_CUBE_NAME, factName, factColumns, storageAggregatePeriods, 100L, properties,
       storageTables);
