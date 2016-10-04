@@ -119,4 +119,6 @@ public final class CubeQueryConfUtil {
   public static final boolean DEFAULT_REWRITE_DIM_FILTER_TO_FACT_FILTER = false;
   public static final String COMPLETENESS_THRESHOLD = "lens.cube.query.completeness.threshold";
   public static final String COMPLETENESS_CHECKER_CLASS = "lens.cube.query.completeness.checker.class";
+  public static final Class<? extends DataCompletenessChecker> DEFAULT_COMPLETENESS_CHECKER =
+          DefaultChecker.class.asSubclass(DataCompletenessChecker.class);
 }
