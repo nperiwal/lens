@@ -109,7 +109,7 @@ class StorageTableResolver implements ContextRewriter {
       partWhereClauseFormat = new SimpleDateFormat(formatStr);
     }
     this.phase = PHASE.first();
-    completenessThreshold = conf.getFloat(CubeQueryConfUtil.COMPLETENESS_THRESHOLD, 100f);
+    completenessThreshold = conf.getFloat(CubeQueryConfUtil.COMPLETENESS_THRESHOLD, 99f);
     completenessChecker = ReflectionUtils.newInstance(conf.getClass(CubeQueryConfUtil.COMPLETENESS_CHECKER_CLASS,
             CubeQueryConfUtil.DEFAULT_COMPLETENESS_CHECKER, DataCompletenessChecker.class), this.conf);
     completenessPartCol = conf.get(CubeQueryConfUtil.COMPLETENESS_CHECK_PART_COL);

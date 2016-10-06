@@ -232,16 +232,6 @@ public class FieldsCannotBeQueriedTogetherTest extends TestQueryRewrite {
   }
 
   @Test
-  public void testQueryWithMeasureWithDataCompletenessTag() throws ParseException,
-          LensException {
-    //In this query a measure is used for which dataCompletenessTag is set.
-    conf.setStrings(CubeQueryConfUtil.COMPLETENESS_CHECK_PART_COL, "dt");
-    conf.setStrings(CubeQueryConfUtil.COMPLETENESS_CHECKER_CLASS,
-            "org.apache.lens.cube.parse.DefaultCompletenessChecker");
-    rewrite("select SUM(msr1) from basecube where " + TWO_DAYS_RANGE, conf);
-  }
-
-  @Test
   public void testQueryWithDimAttributesNotInSameDerviedCube() throws ParseException, LensException {
 
     /* dim2 and countryid are not present in the same derived cube, hence query should be disallowed */

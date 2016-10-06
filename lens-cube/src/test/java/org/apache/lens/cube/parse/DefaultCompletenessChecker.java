@@ -32,7 +32,11 @@ public class DefaultCompletenessChecker implements DataCompletenessChecker {
     Calendar cal = Calendar.getInstance();
     cal.setTimeZone(TimeZone.getTimeZone("GMT"));
     cal.add(Calendar.DATE, -1);
-    partitionCompleteness.put(cal.getTime(), 90f);
+    if (factTag.equals("f1")) {
+      partitionCompleteness.put(cal.getTime(), 80f);
+    } else {
+      partitionCompleteness.put(cal.getTime(), 90f);
+    }
     result.put("tag1", partitionCompleteness);
     return result;
   }

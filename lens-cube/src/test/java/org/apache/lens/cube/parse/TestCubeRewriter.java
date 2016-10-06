@@ -930,6 +930,47 @@ public class TestCubeRewriter extends TestQueryRewrite {
   }
 
   @Test
+  public void testQueryWithMeasureWithDataCompletenessTag() throws ParseException,
+          LensException {
+    //In this query a measure is used for which dataCompletenessTag is set.
+    conf.setStrings(CubeQueryConfUtil.COMPLETENESS_CHECK_PART_COL, "dt");
+    conf.setStrings(CubeQueryConfUtil.COMPLETENESS_CHECKER_CLASS,
+            "org.apache.lens.cube.parse.DefaultCompletenessChecker");
+    rewrite("select SUM(msr1) from basecube where " + TWO_DAYS_RANGE, conf);
+  }
+
+  @Test
+  public void testQueryWithMeasureWithDataCompletenessPresentInMultipleFacts() throws ParseException,
+          LensException {
+    /*In this query a measure is used which is present in two facts with different %completeness. While resolving the
+    facts, the fact with the higher dataCompletenessFactor gets picked up.*/
+    conf.setStrings(CubeQueryConfUtil.COMPLETENESS_CHECK_PART_COL, "dt");
+    conf.setStrings(CubeQueryConfUtil.COMPLETENESS_CHECKER_CLASS,
+            "org.apache.lens.cube.parse.DefaultCompletenessChecker");
+    rewrite("select SUM(msr9) from basecube where " + TWO_DAYS_RANGE, conf);
+  }
+
+  @Test
+  public void testCubeWhereQueryWithMeasureWithDataCompletenessAndFailIfPartialDataFlagSet() throws ParseException,
+          LensException {
+    /*In this query a measure is used for which dataCompletenessTag is set and the flag FAIL_QUERY_ON_PARTIAL_DATA is
+    set. The partitions for the queried range are present but some of the them have incomplete data. So, the query
+    throws NO_CANDIDATE_FACT_AVAILABLE Exception*/
+    conf.setStrings(CubeQueryConfUtil.COMPLETENESS_CHECK_PART_COL, "dt");
+    conf.setStrings(CubeQueryConfUtil.COMPLETENESS_CHECKER_CLASS,
+            "org.apache.lens.cube.parse.DefaultCompletenessChecker");
+    conf.setBoolean(CubeQueryConfUtil.FAIL_QUERY_ON_PARTIAL_DATA, true);
+    LensException e = getLensExceptionInRewrite("select SUM(msr9) from basecube where " + TWO_DAYS_RANGE, conf);
+    assertEquals(e.getErrorCode(), LensCubeErrorCode.NO_CANDIDATE_FACT_AVAILABLE.getLensErrorInfo().getErrorCode());
+    NoCandidateFactAvailableException ne = (NoCandidateFactAvailableException) e;
+    PruneCauses.BriefAndDetailedError pruneCauses = ne.getJsonMessage();
+    assertEquals(pruneCauses.getBrief().substring(0, INCOMPLETE_PARTITION.errorFormat.length() - 3),
+            INCOMPLETE_PARTITION.errorFormat.substring(0,
+                    INCOMPLETE_PARTITION.errorFormat.length() - 3), pruneCauses.getBrief());
+
+  }
+
+  @Test
   public void testCubeWhereQueryForMonthWithNoPartialData() throws Exception {
     Configuration conf = getConf();
     conf.setBoolean(CubeQueryConfUtil.FAIL_QUERY_ON_PARTIAL_DATA, true);

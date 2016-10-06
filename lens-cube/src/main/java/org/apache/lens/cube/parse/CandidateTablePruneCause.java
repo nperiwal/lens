@@ -116,16 +116,6 @@ public class CandidateTablePruneCause {
         };
       }
     },
-    // incomplete data in the fact
-    INCOMPLETE_PARTITION("Incomplete Data for the cube table: %s") {
-      Object[] getFormatPlaceholders(Set<CandidateTablePruneCause> causes) {
-        Set<Map<String, Map<String, Float>>> incompletePartitions = Sets.newHashSet();
-        for (CandidateTablePruneCause cause : causes) {
-          incompletePartitions.add(cause.getIncompletePartitions());
-        }
-        return new String[]{incompletePartitions.toString()};
-      }
-    },
     NO_FACT_UPDATE_PERIODS_FOR_GIVEN_RANGE("No fact update periods for given range"),
     NO_COLUMN_PART_OF_A_JOIN_PATH("No column part of a join path. Join columns: [%s]") {
       Object[] getFormatPlaceholders(Set<CandidateTablePruneCause> causes) {
@@ -155,6 +145,16 @@ public class CandidateTablePruneCause {
           missingPartitions.add(cause.getMissingPartitions());
         }
         return new String[]{missingPartitions.toString()};
+      }
+    },
+    // incomplete data in the fact
+    INCOMPLETE_PARTITION("Data is incomplete. Details : %s") {
+      Object[] getFormatPlaceholders(Set<CandidateTablePruneCause> causes) {
+        Set<Map<String, Map<String, Float>>> incompletePartitions = Sets.newHashSet();
+        for (CandidateTablePruneCause cause : causes) {
+          incompletePartitions.add(cause.getIncompletePartitions());
+        }
+        return new String[]{incompletePartitions.toString()};
       }
     };
 

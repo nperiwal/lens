@@ -529,6 +529,8 @@ public class CubeTestSetup {
       null));
     cubeMeasures.add(new ColumnMeasure(new FieldSchema("msr4", "bigint", "fourth measure"), "Measure4", null, "COUNT",
       null));
+    cubeMeasures.add(new ColumnMeasure(new FieldSchema("msr9", "bigint", "ninth measure"), null, null, null, null,
+            null, null, null, null, null, tags));
     cubeMeasures.add(new ColumnMeasure(new FieldSchema("noAggrMsr", "bigint", "measure without a default aggregate"),
       "No aggregateMsr", null, null, null));
     cubeMeasures.add(new ColumnMeasure(new FieldSchema("newmeasure", "bigint", "measure available  from now"),
@@ -685,6 +687,7 @@ public class CubeTestSetup {
     measures.add("msr1");
     measures.add("msr2");
     measures.add("msr3");
+    measures.add("msr9");
     Set<String> dimensions = new HashSet<String>();
     dimensions.add("dim1");
     dimensions.add("dim2");
@@ -1210,6 +1213,7 @@ public class CubeTestSetup {
     derivedProperties.put(MetastoreConstants.CUBE_ALL_FIELDS_QUERIABLE, "true");
     Set<String> measures = new HashSet<>();
     measures.add("msr1");
+    measures.add("msr9");
     measures.add("msr11");
     Set<String> dimensions = new HashSet<>();
     dimensions.add("dim1");
@@ -1405,6 +1409,7 @@ public class CubeTestSetup {
     factColumns = new ArrayList<FieldSchema>();
     factColumns.add(new FieldSchema("msr11", "int", "first measure"));
     factColumns.add(new FieldSchema("msr12", "float", "second measure"));
+    factColumns.add(new FieldSchema("msr9", "bigint", "ninth measure"));
 
     // add dimensions of the cube
     factColumns.add(new FieldSchema("d_time", "timestamp", "event time"));
@@ -1427,6 +1432,7 @@ public class CubeTestSetup {
     properties.clear();
     properties.putAll(factValidityProperties);
     properties.put(MetastoreConstants.FACT_AGGREGATED_PROPERTY, "false");
+    properties.put(MetastoreConstants.FACT_DATA_COMPLETENESS_TAG, "f2");
 
     client.createCubeFactTable(BASE_CUBE_NAME, factName, factColumns, storageAggregatePeriods, 100L, properties,
       storageTables);
@@ -1477,6 +1483,36 @@ public class CubeTestSetup {
     properties.put(MetastoreConstants.FACT_COL_START_TIME_PFX.concat("user_id_added_far_future"), "2099-01-01");
     client.createCubeFactTable(BASE_CUBE_NAME, factName, factColumns, storageAggregatePeriods, 100L, properties,
         storageTables);
+
+    factName = "testFact5_RAW_BASE";
+    factColumns = new ArrayList<FieldSchema>();
+    factColumns.add(new FieldSchema("msr9", "bigint", "ninth measure"));
+
+    // add dimensions of the cube
+    factColumns.add(new FieldSchema("d_time", "timestamp", "event time"));
+    factColumns.add(new FieldSchema("processing_time", "timestamp", "processing time"));
+    factColumns.add(new FieldSchema("dim1", "string", "base dim"));
+
+    properties.clear();
+    properties.putAll(factValidityProperties);
+    properties.put(MetastoreConstants.FACT_AGGREGATED_PROPERTY, "false");
+    properties.put(MetastoreConstants.FACT_DATA_COMPLETENESS_TAG, "f2");
+    client.createCubeFactTable(BASE_CUBE_NAME, factName, factColumns, storageAggregatePeriods, 100L, properties,
+            storageTables);
+
+    CubeFactTable fact = client.getFactTable(factName);
+    // Add all hourly partitions for two days
+    Calendar cal = Calendar.getInstance();
+    cal.setTime(TWODAYS_BACK);
+    Date temp = cal.getTime();
+    while (!(temp.after(NOW))) {
+      Map<String, Date> timeParts = new HashMap<String, Date>();
+      timeParts.put("dt", temp);
+      StoragePartitionDesc sPartSpec = new StoragePartitionDesc(fact.getName(), timeParts, null, HOURLY);
+      client.addPartition(sPartSpec, c1, CubeTableType.FACT);
+      cal.add(HOUR_OF_DAY, 1);
+      temp = cal.getTime();
+    }
   }
 
   private void createCubeContinuousFact(CubeMetastoreClient client) throws Exception {
